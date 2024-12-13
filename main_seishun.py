@@ -93,6 +93,9 @@ api_key = "054f72271ae8d8ea2beea5ae520ca6d2"
 # ユーザーが映画タイトルを入力（KJコードから引き渡すため、コメントアウト by KJ）
 #movie_title = st.text_input("") #説明なくてもよさそうなので空欄
 
+# full_image_url を初期化（初期化しないとエラーとなったので初期化処理を入れた by KJ）
+full_image_url = None
+
 movie_title = output_content_text
 #ユーザー入力前、APIリクエストをスキップするように条件分岐を追加
 if movie_title:
