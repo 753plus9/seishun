@@ -8,13 +8,13 @@ import requests
 import os # OSが持つ環境変数OPENAI_API_KEYにAPIを入力するためにosにアクセスするためのライブラリをインポート
 
 ##API_KEYを渡す（streamlitで動かすとき）ローカルで動かす時はこちらをコメント
-#API_KEY = st.secrets["OPENAI_API_KEY"]
-#client = OpenAI(api_key=API_KEY)
+API_KEY = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=API_KEY)
 
 ##API_KEYを渡す（ローカルで動かすとき）streamlitで動かす時はこちらをコメントアウト
 #ターミナルでこれを実行　→ export OPENAI_API_KEY="sk-XXXXXXXXXXXX"
-API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=API_KEY)
+#API_KEY = os.getenv("OPENAI_API_KEY")
+#client = OpenAI(api_key=API_KEY)
 
 # chatGPTにリクエストするためのメソッドを設定。引数には書いてほしい内容と文章のテイストと最大文字数を指定
 def run_gpt(content_text_to_gpt):
