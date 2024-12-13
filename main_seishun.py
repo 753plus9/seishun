@@ -82,9 +82,9 @@ if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
     else:
         st.write("気分を入力してください！")
 
-##やまけんさんコード     
-# APIキーを指定
-api_key = "054f72271ae8d8ea2beea5ae520ca6d2"
+##やまけんさんコード  
+# TMDBのAPIキーをStreamlitのsecretsから取得
+api_key = st.secrets["TMDB_API_KEY"]
 
 # Streamlitアプリの構成（もっちゃんコードと重複のためコメントアウト by KJ）
 #st.title("映画情報検索アプリ")
