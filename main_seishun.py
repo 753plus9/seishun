@@ -35,7 +35,7 @@ def run_gpt(content_text_to_gpt):
 
 ##もっちゃんコード
 #タイトル
-st.sidebar.title(':rainbow[_映画提案アプリ_]')
+st.sidebar.title(':rainbow[_Seishun Cinema_]')
 
 #アプリの説明文
 st.sidebar.write('『今日映画何見る？』の提案アプリ！')
@@ -50,15 +50,18 @@ option_selectbox = st.sidebar.selectbox(
     "年齢を教えて！",
     ("10代以下", "10代", "20代", "30代", "40代", "50代", "60代", "70代", "80代以上"),
 )
-text_input1 = st.sidebar.text_input('誰と映画を見るの？')
-
-text_input2 = st.sidebar.text_input(
-    "今の気分は？",
-    "",
+text_input1 = st.sidebar.selectbox(
+    "誰と映画を見るの？",
+    ("お友達", "彼氏", "彼女" , "夫", "妻", "子ども", "両親", "好きな人"),
 )
-text_area = st.sidebar.text_area(
+text_input2 = st.sidebar.selectbox(
+    "今の気分は？",
+    ("落ち込み気味" , "悲しい気持ち" , "不安な気持ち" ,"怒り気味" , "普通" , "楽しい気持ち" , "嬉しい気持ち" , "興奮気味", "Techモード"),
+)
+text_area = st.sidebar.selectbox(
     "映画を見てどんな気分になりたい？",
-    "",
+    ("感動したい", "温かい気持ちになりたい", "興奮したい", "恐怖に怯えたい", "熱い気持ちになりたい", "キュンキュンしたい"),
+    
 )
 
 #KJ追記
@@ -66,7 +69,7 @@ text_area = st.sidebar.text_area(
 content_text_to_gpt =(
     f"私は{option_selectbox}の{option_radio}です。今日は{text_input1}と映画を見ようとしています。\n"
     f"今の気分は{text_input2}です。\n"
-    f"映画をみてどんな気分になりたいかと言われれば、{text_area}です。そんな私におすすめの映画を教えてください。\n"
+    f"映画をみて{text_area}私に、おすすめの映画を教えてください。\n"
     f"回答の形式はTMDBに登録されている映画のタイトルのみでお願いします。回答は１つだけ。TMDBのIDではありません。タイトル以外の言葉は書かないでください。）\n"
 )
 
