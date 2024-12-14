@@ -5,7 +5,7 @@ from datetime import date
 import difflib
 
 # TMDBのAPIキーをStreamlitのsecretsから取得
-api_key = "054f72271ae8d8ea2beea5ae520ca6d2"
+api_key = st.secrets["TMDB_API_KEY"]
 
 # データベース接続設定
 conn = sqlite3.connect("database.db")
