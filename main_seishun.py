@@ -258,9 +258,9 @@ else:
 
     
 ##最後に変数を初期化（by KJ）
-output_content_text = ""
-search_response = ""
-detail_response = ""
-credits_response = ""
-reviews_data = ""
+#output_content_text = ""
+#search_response = ""
+#detail_response = ""
+#credits_response = ""
+#reviews_data = ""
 
