@@ -2,8 +2,14 @@ import streamlit as st # フロントエンドを扱うstreamlitの機能をイ�
 from openai import OpenAI # openAIのchatGPTのAIを活用するための機能をインポート
 import difflib
 import requests
-####本橋追記（12月15日）
-import time
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import date
+import pandas as pd
+
+# アクセスの為のキーをos.environ["OPENAI_API_KEY"]に代入し、設定
+
+import os # OSが持つ環境変数OPENAI_API_KEYにAPIを入力するためにosにアクセスするためのライブラリをインポート
 
 page_style = '''
 <style>
@@ -25,11 +31,6 @@ page_style = '''
 </style>
 '''
 st.markdown(page_style, unsafe_allow_html=True)
-####本橋追記（12月15日）
-
-# アクセスの為のキーをos.environ["OPENAI_API_KEY"]に代入し、設定
-
-import os # OSが持つ環境変数OPENAI_API_KEYにAPIを入力するためにosにアクセスするためのライブラリをインポート
 
 ##API_KEYを渡す（streamlitで動かすとき）ローカルで動かす時はこちらをコメント
 API_KEY = st.secrets["OPENAI_API_KEY"]
@@ -103,14 +104,14 @@ output_content_text = ""
 
 ####本橋追記（12月15日）
 # ボタンが押された場合
-import base64
+#import base64
 
-def local_gif(path):
-    """ローカルのGIFファイルをHTMLで埋め込む"""
-    with open(path, "rb") as gif_file:
-        gif_data = gif_file.read()
-    data_url = base64.b64encode(gif_data).decode("utf-8")
-    return f'<img src="data:image/gif;base64,{data_url}" style="width:100%; height:100%;">'
+#def local_gif(path):
+#    """ローカルのGIFファイルをHTMLで埋め込む"""
+#    with open(path, "rb") as gif_file:
+#        gif_data = gif_file.read()
+#    data_url = base64.b64encode(gif_data).decode("utf-8")
+#    return f'<img src="data:image/gif;base64,{data_url}" style="width:100%; height:100%;">'
 
 # ボタンがクリックされた場合のみ GPT を実行
 if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
@@ -140,9 +141,121 @@ if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
 
 ####本橋追記（12月15日）
 
-##やまけんさんコード
+#(TOMO追記) 見る映画が決まっている人のボタンをサイドバーに追加　
+text_input_movie = st.sidebar.text_input(
+    "見る映画が決まってるかたはこちら！これから観る映画名をおしえて！",
+    (""),  
+)
+
+##やまけんさんコード  
 # TMDBのAPIキーをStreamlitのsecretsから取得
 api_key = st.secrets["TMDB_API_KEY"]
+
+#TOMO追記  見る映画が決まっている人のボタンがクリックされた場合のみ  TMDBと連携実行
+if st.sidebar.button('観る映画はこれ！', type="primary"):
+    if text_input_movie:  # 入力がある場合
+        title = text_input_movie  # 直接入力された映画名
+
+        # TMDB API で映画情報を検索
+        search_url = "https://api.themoviedb.org/3/search/movie"
+        search_params = {
+            "api_key": api_key,
+            "query": title,
+            "include_adult": "false",
+            "language": "ja",
+        }
+        search_response = requests.get(search_url, params=search_params)
+        if search_response.status_code == 200 and search_response.json().get("results"):
+            search_data = search_response.json()
+            # 一番最初の検索結果を取得
+            movie = search_data["results"][0]
+            movie_id = movie["id"]
+            
+# タイトルの類似度を評価して最も近い映画を選択
+            def get_title_similarity(s1, s2):
+                return difflib.SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
+            most_similar_movie = max(
+                search_data["results"],
+                key=lambda movie: get_title_similarity(movie["title"], title)
+            )
+            movie_id = most_similar_movie["id"]
+
+
+            # 詳細情報を取得
+            detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+            detail_params = {"api_key": api_key, "language": "ja"}
+            detail_response = requests.get(detail_url, params=detail_params)
+
+            if detail_response.status_code == 200:
+                detail_data = detail_response.json()
+
+                # ポスター画像URLを構築
+                poster_path = detail_data.get("poster_path")
+                poster_url = f"https://image.tmdb.org/t/p/w300{poster_path}" if poster_path else None
+                
+                images_url = f"https://api.themoviedb.org/3/movie/{movie_id}/images"
+                poster_size = "w300" 
+                
+                images_params = {
+                    "api_key": api_key, 
+                    "include_image_language": "ja",
+                }   
+                images_response = requests.get(images_url, images_params)
+                
+                if images_response.status_code == 200:
+                    images_data = images_response.json()
+                    posters = images_data.get("posters", [])
+                    if posters:
+                        file_path = posters[0].get("file_path")
+                        full_image_url = f"https://image.tmdb.org/t/p/{poster_size}{file_path}"  # フルURLを構築st.write("### 映画情報")
+                    
+
+                # 映画情報の表示
+                st.subheader(f"{detail_data['title']} ({detail_data['original_title']})")
+                if full_image_url:
+                    st.image(full_image_url)
+                st.write(f" {detail_data.get('overview', 'N/A')}")
+                st.write(f"**公開日**: {detail_data.get('release_date', 'N/A')}")
+                st.write(f"**上映時間**: {detail_data.get('runtime', 'N/A')} 分")
+                st.write(f"**評価スコア** :{detail_data.get('vote_average', 'N/A')} /10")
+                st.write(f"**評価数** :{detail_data.get('vote_count', 'N/A')} 件")
+                # 製作者、キャスト情報の取得
+        credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
+        credits_params = {"api_key": api_key, "language": "ja"}
+        credits_response = requests.get(credits_url, params=credits_params)
+        if credits_response.status_code == 200:
+            credits_data = credits_response.json()
+            
+            st.write("### 製作者情報")
+            crew = credits_data.get("crew", []) 
+            filtered_roles = ["Director", "Screenplay", "Producer", "Writer", "Composer"]
+            filtered_crew = [
+            member for member in crew if member.get("job") in filtered_roles
+            ]
+            for member in filtered_crew[:5]:  # 上位5人まで
+                name = member.get("name", "N/A")
+                job = member.get("job", "N/A")
+                st.write(f"- {job}:{name}")
+
+            st.write("### キャスト情報")
+            cast = credits_data.get("cast", [])
+            for actor in cast[:5]:
+                name = actor.get("name", "N/A")
+                character = actor.get("character", "N/A")
+                profile_path = actor.get("profile_path", None)
+                st.write((f"- {name} ( {character} )"))
+                if profile_path:
+                    profile_url = f"https://image.tmdb.org/t/p/w200{profile_path}"
+                    st.image(profile_url,width=100)  
+                    #画像サイズが大きかったので調整（url部分を直そうとしたらエラーとなったので、ここで調整）
+        
+        else:
+            st.error("映画が見つかりませんでした。正しいタイトルを入力してください。")
+    else:
+        st.warning("映画名を入力してください！")
+
+
+
 
 # Streamlitアプリの構成（もっちゃんコードと重複のためコメントアウト by KJ）
 #st.title("映画情報検索アプリ")
@@ -154,7 +267,9 @@ api_key = st.secrets["TMDB_API_KEY"]
 # full_image_url を初期化（初期化しないとエラーとなったので初期化処理を入れた by KJ）
 full_image_url = None
 
-movie_title = output_content_text
+
+#気分など入力し映画を検索するボタンがクリックされたときの条件（OPENAPIをつかう）
+movie_title = output_content_text # GPTから返ってきた回答映画名
 #ユーザー入力前、APIリクエストをスキップするように条件分岐を追加
 if movie_title:
     title = movie_title
@@ -253,28 +368,6 @@ if movie_title:
     else:
         st.write("映画情報の取得に失敗しました。")
    
-    #　レビュー情報の取得
-    reviews_url = f"https://api.themoviedb.org/3/movie/{movie_id}/reviews"
-    reviews_params = {
-        "api_key": api_key, 
-        "language": "en-US",
-    }    
-    
-    reviews_response = requests.get(reviews_url, params= reviews_params)
-
-    reviews_data = reviews_response.json()
-    reviews = reviews_data.get("results",[])
-    if reviews:
-        st.write("### レビュー")
-        for review in reviews[:3]: 
-            author = review.get("author", "Unknown")
-            content = review.get("content", "No content")
-            st.write(f"**Reviewer :  {author}さんのレビュー**")
-            st.write(f"Review :  {content}\n")
-    else:
-        st.write("None")
-else:
-    st.write("") #説明なくてもよさそうなので空欄
     
 ##最後に変数を初期化（by KJ）
 output_content_text = ""
@@ -282,4 +375,71 @@ search_response = ""
 detail_response = ""
 credits_response = ""
 reviews_data = ""
+
+
+# ここからはGoogleSpreadSheetへの転記する部分
+# サービスアカウントキーの正しいパスを指定
+service_account_info = st.secrets["gcp_service_account"]
+SPREADSHEET_ID = "1VMLHhQH14jaPUDKWF9--l4OjcFt2zpSQOQ_xfHlA3UI"
+
+# Googleスプレッドシート認証
+# 以下はお作法的な意味合いが強いと思っています。
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+
+# 認証処理# 変数、service_account_infoでの認証に記述を変更。
+credentials = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+gc = gspread.authorize(credentials)
+# 以上までが認証のところで、以下はスプレッドシートのsheet1を参照する事を指定しています。
+sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
+
+# Streamlitアプリケーション
+st.title("映画視聴感想入力")
+
+# データ入力フォーム
+with st.form("entry_form"):
+    movie_title = st.text_input("映画名",  placeholder="例）トップガン")
+    release_date = st.text_input("公開日", placeholder="例）yyyy/mm/dd")
+    Director = st.text_input("監督", placeholder="殿")
+    movie_day_input = st.date_input("映画を見た日", value=date.today())
+    user_rating = st.selectbox(
+                "評価",
+                ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
+                index=0
+            )
+    user_comment = st.text_input("感想コメント", value="")
+
+    # フォームの送信ボタン
+    submitted = st.form_submit_button("保存")
+
+if submitted:
+    try:
+        # スプレッドシートの行番号を取得
+        last_row = len(sheet.get_all_values()) # 現在の行数を取得（ヘッダーを含む）
+        next_no = last_row  # 新しい行番号を設定（1行目はヘッダー）
+        # スプレッドシートにデータを書き込む
+        sheet.append_row([
+            next_no,  # No.
+            movie_day_input.strftime("%Y-%m-%d"),  # 映画を見た日
+            movie_title,  # 映画名
+            release_date,  # 公開日
+            Director,  # 監督
+            user_rating,  # 評価
+            user_comment  # コメント
+        ])
+        st.success("データがスプレッドシートに追加されました！")
+    except Exception as e:
+        st.error(f"データの保存中にエラーが発生しました: {e}")
+        
+# スプレッドシートのデータを読み取って表示
+try:
+    # スプレッドシートの内容をDataFrameとして取得
+    data = sheet.get_all_records()  # ヘッダーを除いたデータを取得
+    df = pd.DataFrame(data)
+
+    # Streamlitで表示
+    st.subheader("映画記録")
+    st.dataframe(df)  # Streamlitで表形式で表示
+except Exception as e:
+    st.error(f"スプレッドシートの読み取り中にエラーが発生しました: {e}")
+
 
