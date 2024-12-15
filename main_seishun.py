@@ -405,51 +405,51 @@ sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
 if st.session_state.show_review_form:
     st.title("映画視聴感想入力")
 
-# データ入力フォーム
-with st.form("entry_form"):
-    movie_title = st.text_input("映画名",  placeholder="例）トップガン")
-    release_date = st.text_input("公開日", placeholder="例）yyyy/mm/dd")
-    Director = st.text_input("監督", placeholder="殿")
-    movie_day_input = st.date_input("映画を見た日", value=date.today())
-    user_rating = st.selectbox(
-                "評価",
-                ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
-                index=0
-            )
-    user_comment = st.text_input("感想コメント", value="")
+    # データ入力フォーム
+    with st.form("entry_form"):
+        movie_title = st.text_input("映画名",  placeholder="例）トップガン")
+        release_date = st.text_input("公開日", placeholder="例）yyyy/mm/dd")
+        Director = st.text_input("監督", placeholder="殿")
+        movie_day_input = st.date_input("映画を見た日", value=date.today())
+        user_rating = st.selectbox(
+                    "評価",
+                    ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
+                    index=0
+                )
+        user_comment = st.text_input("感想コメント", value="")
 
-    # フォームの送信ボタン
-    submitted = st.form_submit_button("保存")
+        # フォームの送信ボタン
+        submitted = st.form_submit_button("保存")
 
-if submitted:
+    if submitted:
+        try:
+            # スプレッドシートの行番号を取得
+            last_row = len(sheet.get_all_values()) # 現在の行数を取得（ヘッダーを含む）
+            next_no = last_row  # 新しい行番号を設定（1行目はヘッダー）
+            # スプレッドシートにデータを書き込む
+            sheet.append_row([
+                next_no,  # No.
+                movie_day_input.strftime("%Y-%m-%d"),  # 映画を見た日
+                movie_title,  # 映画名
+                release_date,  # 公開日
+                Director,  # 監督
+                user_rating,  # 評価
+                user_comment  # コメント
+            ])
+            st.success("データがスプレッドシートに追加されました！")
+        except Exception as e:
+            st.error(f"データの保存中にエラーが発生しました: {e}")
+            
+    # スプレッドシートのデータを読み取って表示
     try:
-        # スプレッドシートの行番号を取得
-        last_row = len(sheet.get_all_values()) # 現在の行数を取得（ヘッダーを含む）
-        next_no = last_row  # 新しい行番号を設定（1行目はヘッダー）
-        # スプレッドシートにデータを書き込む
-        sheet.append_row([
-            next_no,  # No.
-            movie_day_input.strftime("%Y-%m-%d"),  # 映画を見た日
-            movie_title,  # 映画名
-            release_date,  # 公開日
-            Director,  # 監督
-            user_rating,  # 評価
-            user_comment  # コメント
-        ])
-        st.success("データがスプレッドシートに追加されました！")
-    except Exception as e:
-        st.error(f"データの保存中にエラーが発生しました: {e}")
-        
-# スプレッドシートのデータを読み取って表示
-try:
-    # スプレッドシートの内容をDataFrameとして取得
-    data = sheet.get_all_records()  # ヘッダーを除いたデータを取得
-    df = pd.DataFrame(data)
+        # スプレッドシートの内容をDataFrameとして取得
+        data = sheet.get_all_records()  # ヘッダーを除いたデータを取得
+        df = pd.DataFrame(data)
 
-    # Streamlitで表示
-    st.subheader("映画記録")
-    st.dataframe(df)  # Streamlitで表形式で表示
-except Exception as e:
-    st.error(f"スプレッドシートの読み取り中にエラーが発生しました: {e}")
+        # Streamlitで表示
+        st.subheader("映画記録")
+        st.dataframe(df)  # Streamlitで表形式で表示
+    except Exception as e:
+        st.error(f"スプレッドシートの読み取り中にエラーが発生しました: {e}")
 
 
