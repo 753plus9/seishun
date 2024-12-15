@@ -260,8 +260,8 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
         
         else:
             st.error("映画が見つかりませんでした。正しいタイトルを入力してください。")
-    # 映画視聴感想入力フォームを表示（KJ追記★）
-    st.session_state.show_review_form = True
+        # 映画視聴感想入力フォームを表示（KJ追記★）
+        st.session_state.show_review_form = True
     
     else:
         st.warning("映画名を入力してください！")
