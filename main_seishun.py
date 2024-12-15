@@ -115,6 +115,10 @@ output_content_text = ""
 #    data_url = base64.b64encode(gif_data).decode("utf-8")
 #    return f'<img src="data:image/gif;base64,{data_url}" style="width:100%; height:100%;">'
 
+# 初期状態を設定（KJ追記★）
+if "show_review_form" not in st.session_state:
+    st.session_state.show_review_form = False
+
 # ボタンがクリックされた場合のみ GPT を実行
 if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
      if content_text_to_gpt:
@@ -136,6 +140,9 @@ if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
             output_content_text = run_gpt(content_text_to_gpt)
             st.write("おすすめの映画です！")
             st.write(output_content_text)
+            
+            # 映画視聴感想入力フォームを表示（KJ追記★）
+            st.session_state.show_review_form = True
         except Exception as e:
             st.error(f"エラーが発生しました: {e}")
      else:
@@ -253,11 +260,12 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
         
         else:
             st.error("映画が見つかりませんでした。正しいタイトルを入力してください。")
+    
+    # 映画視聴感想入力フォームを表示（KJ追記★）
+    st.session_state.show_review_form = True
+    
     else:
         st.warning("映画名を入力してください！")
-
-
-
 
 # Streamlitアプリの構成（もっちゃんコードと重複のためコメントアウト by KJ）
 #st.title("映画情報検索アプリ")
@@ -394,8 +402,9 @@ gc = gspread.authorize(credentials)
 # 以上までが認証のところで、以下はスプレッドシートのsheet1を参照する事を指定しています。
 sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
 
-# Streamlitアプリケーション
-st.title("映画視聴感想入力")
+# 映画視聴感想入力フォームを表示するか判定（KJ追記★）
+if st.session_state.show_review_form:
+    st.title("映画視聴感想入力")
 
 # データ入力フォーム
 with st.form("entry_form"):
