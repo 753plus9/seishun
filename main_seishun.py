@@ -332,7 +332,7 @@ if movie_title:
 
         #映画名と公開日を保存(KJ追記★）
         #st.session_state.movie_title = movie["title"]  # 映画名を保存
-        st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
+        #st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
 
         # 映画詳細情報の取得
         detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
