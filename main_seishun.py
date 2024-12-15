@@ -62,7 +62,7 @@ def run_gpt(content_text_to_gpt):
 
 ##もっちゃんコード
 #タイトル
-st.sidebar.title(':rainbow[_Seishun Cinema_]')
+st.sidebar.image("thumbnail.jpg")
 
 #アプリの説明文
 st.sidebar.write('『今日映画何見る？』の提案アプリ！')
