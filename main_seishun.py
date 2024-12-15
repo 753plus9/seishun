@@ -106,14 +106,14 @@ output_content_text = ""
 
 ####本橋追記（12月15日）
 # ボタンが押された場合
-#import base64
+import base64
 
-#def local_gif(path):
-#    """ローカルのGIFファイルをHTMLで埋め込む"""
-#    with open(path, "rb") as gif_file:
-#        gif_data = gif_file.read()
-#    data_url = base64.b64encode(gif_data).decode("utf-8")
-#    return f'<img src="data:image/gif;base64,{data_url}" style="width:100%; height:100%;">'
+def local_gif(path):
+    """ローカルのGIFファイルをHTMLで埋め込む"""
+    with open(path, "rb") as gif_file:
+        gif_data = gif_file.read()
+    data_url = base64.b64encode(gif_data).decode("utf-8")
+    return f'<img src="data:image/gif;base64,{data_url}" style="width:100%; height:100%;">'
 
 # 初期状態を設定（KJ追記★）
 if "show_review_form" not in st.session_state:
