@@ -134,12 +134,12 @@ if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
             placeholder = st.empty()
 
             # ローカルGIFをHTMLで埋め込む
-            #with placeholder:
-            #    gif_html = local_gif("loading.gif")
-            #    st.markdown(gif_html, unsafe_allow_html=True)
+            with placeholder:
+                gif_html = local_gif("loading.gif")
+                st.markdown(gif_html, unsafe_allow_html=True)
 
             # 3秒間待機
-            #time.sleep(3)
+            time.sleep(3)
 
             # GIFを非表示にする
             placeholder.empty()
