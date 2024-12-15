@@ -119,6 +119,14 @@ output_content_text = ""
 if "show_review_form" not in st.session_state:
     st.session_state.show_review_form = False
 
+# 映画検索結果の値を保存するための変数（KJ追記★）
+if "movie_title" not in st.session_state:
+    st.session_state.movie_title = ""
+if "release_date" not in st.session_state:
+    st.session_state.release_date = ""
+if "director_name" not in st.session_state:
+    st.session_state.director_name = ""
+
 # ボタンがクリックされた場合のみ GPT を実行
 if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
      if content_text_to_gpt:
@@ -179,6 +187,9 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
             # 一番最初の検索結果を取得
             movie = search_data["results"][0]
             movie_id = movie["id"]
+            #映画名と公開日を保存(KJ追記★）
+            st.session_state.movie_title = movie["title"]  # 映画名を保存
+            st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
 
 # タイトルの類似度を評価して最も近い映画を選択
             def get_title_similarity(s1, s2):
@@ -197,6 +208,18 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
 
             if detail_response.status_code == 200:
                 detail_data = detail_response.json()
+
+                # 監督情報を取得(KJ追記★）
+                credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
+                credits_params = {"api_key": api_key, "language": "ja"}
+                credits_response = requests.get(credits_url, params=credits_params)
+                if credits_response.status_code == 200:
+                    credits_data = credits_response.json()
+                    crew = credits_data.get("crew", [])
+                    directors = [member for member in crew if member.get("job") == "Director"]
+                    if directors:
+                        st.session_state.director_name = directors[0].get("name", "N/A")  # 監督名を保存
+
 
                 # ポスター画像URLを構築
                 poster_path = detail_data.get("poster_path")
@@ -307,6 +330,10 @@ if movie_title:
         )
         movie_id = most_similar_movie["id"]
 
+        #映画名と公開日を保存(KJ追記★）
+        st.session_state.movie_title = movie["title"]  # 映画名を保存
+        st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
+
         # 映画詳細情報の取得
         detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
         detail_params = {"api_key": api_key, "language": "ja"}
@@ -314,6 +341,17 @@ if movie_title:
         if detail_response.status_code == 200:
             detail_data = detail_response.json()
             
+             # 監督情報を取得(KJ追記★）
+            credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
+            credits_params = {"api_key": api_key, "language": "ja"}
+            credits_response = requests.get(credits_url, params=credits_params)
+            if credits_response.status_code == 200:
+                credits_data = credits_response.json()
+                crew = credits_data.get("crew", [])
+                directors = [member for member in crew if member.get("job") == "Director"]
+                if directors:
+                    st.session_state.director_name = directors[0].get("name", "N/A")  # 監督名を保存
+
               # ポスター情報の取得
             images_url = f"https://api.themoviedb.org/3/movie/{movie_id}/images"
             poster_size = "w300" 
@@ -407,9 +445,9 @@ if st.session_state.show_review_form:
 
     # データ入力フォーム
     with st.form("entry_form"):
-        movie_title = st.text_input("映画名",  placeholder="例）トップガン")
-        release_date = st.text_input("公開日", placeholder="例）yyyy/mm/dd")
-        Director = st.text_input("監督", placeholder="殿")
+        movie_title = st.text_input("映画名", value=st.session_state.movie_title, placeholder="例）トップガン")
+        release_date = st.text_input("公開日", value=st.session_state.release_date, placeholder="例）yyyy/mm/dd")
+        Director = st.text_input("監督", value=st.session_state.director_name, placeholder="殿")
         movie_day_input = st.date_input("映画を見た日", value=date.today())
         user_rating = st.selectbox(
                     "評価",
