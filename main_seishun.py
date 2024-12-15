@@ -296,12 +296,12 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
 # ユーザーが映画タイトルを入力（KJコードから引き渡すため、コメントアウト by KJ）
 #movie_title = st.text_input("") #説明なくてもよさそうなので空欄
 
+#気分など入力し映画を検索するボタンがクリックされたときの条件（OPENAPIをつかう）
+movie_title = output_content_text # GPTから返ってきた回答映画名
+
 # full_image_url を初期化（初期化しないとエラーとなったので初期化処理を入れた by KJ）
 full_image_url = None
 
-
-#気分など入力し映画を検索するボタンがクリックされたときの条件（OPENAPIをつかう）
-movie_title = output_content_text # GPTから返ってきた回答映画名
 #ユーザー入力前、APIリクエストをスキップするように条件分岐を追加
 if movie_title:
     title = movie_title
