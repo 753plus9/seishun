@@ -2,6 +2,30 @@ import streamlit as st # フロントエンドを扱うstreamlitの機能をイ�
 from openai import OpenAI # openAIのchatGPTのAIを活用するための機能をインポート
 import difflib
 import requests
+####本橋追記（12月15日）
+import time
+
+page_style = '''
+<style>
+.stApp {
+    background-color: #e6ffff;
+    color: #2f4f4f;
+}
+.custom-subtitle {
+        color: green; /* 文字色を緑に変更 */
+        font-size: 20px; /* 文字サイズを20pxに変更 */
+}
+
+/* サイドバーの背景色を変更 */
+[data-testid="stSidebar"] {
+    background-color: #009999;
+    color: #000000; /* サイドバーの文字色を黒に変更 */
+}
+
+</style>
+'''
+st.markdown(page_style, unsafe_allow_html=True)
+####本橋追記（12月15日）
 
 # アクセスの為のキーをos.environ["OPENAI_API_KEY"]に代入し、設定
 
@@ -77,15 +101,46 @@ content_text_to_gpt =(
 # 初期値を設定して変数を定義
 output_content_text = ""
 
+####本橋追記（12月15日）
+# ボタンが押された場合
+import base64
+
+def local_gif(path):
+    """ローカルのGIFファイルをHTMLで埋め込む"""
+    with open(path, "rb") as gif_file:
+        gif_data = gif_file.read()
+    data_url = base64.b64encode(gif_data).decode("utf-8")
+    return f'<img src="data:image/gif;base64,{data_url}" style="width:100%; height:100%;">'
+
 # ボタンがクリックされた場合のみ GPT を実行
 if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
-    if content_text_to_gpt:
-        output_content_text = run_gpt(content_text_to_gpt)
-        st.write("おすすめの映画です！")
-    else:
+     if content_text_to_gpt:
+        try:
+            placeholder = st.empty()
+
+            # ローカルGIFをHTMLで埋め込む
+            with placeholder:
+                gif_html = local_gif("loading.gif")
+                st.markdown(gif_html, unsafe_allow_html=True)
+
+            # 3秒間待機
+            time.sleep(3)
+
+            # GIFを非表示にする
+            placeholder.empty()
+
+            # GPTリクエスト処理
+            output_content_text = run_gpt(content_text_to_gpt)
+            st.write("おすすめの映画です！")
+            st.write(output_content_text)
+        except Exception as e:
+            st.error(f"エラーが発生しました: {e}")
+     else:
         st.write("気分を入力してください！")
 
-##やまけんさんコード  
+####本橋追記（12月15日）
+
+##やまけんさんコード
 # TMDBのAPIキーをStreamlitのsecretsから取得
 api_key = st.secrets["TMDB_API_KEY"]
 
