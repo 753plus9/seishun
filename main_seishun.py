@@ -6,6 +6,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date
 import pandas as pd
+import time
+
 
 # アクセスの為のキーをos.environ["OPENAI_API_KEY"]に代入し、設定
 
@@ -125,7 +127,7 @@ if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
             #    st.markdown(gif_html, unsafe_allow_html=True)
 
             # 3秒間待機
-            time.sleep(3)
+            #time.sleep(3)
 
             # GIFを非表示にする
             placeholder.empty()
