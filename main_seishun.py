@@ -140,7 +140,7 @@ if st.sidebar.button('おすすめの映画を教えて！',type="primary"):
             output_content_text = run_gpt(content_text_to_gpt)
             st.write("おすすめの映画です！")
             st.write(output_content_text)
-            
+
             # 映画視聴感想入力フォームを表示（KJ追記★）
             st.session_state.show_review_form = True
         except Exception as e:
@@ -179,7 +179,7 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
             # 一番最初の検索結果を取得
             movie = search_data["results"][0]
             movie_id = movie["id"]
-            
+
 # タイトルの類似度を評価して最も近い映画を選択
             def get_title_similarity(s1, s2):
                 return difflib.SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
@@ -260,7 +260,6 @@ if st.sidebar.button('観る映画はこれ！', type="primary"):
         
         else:
             st.error("映画が見つかりませんでした。正しいタイトルを入力してください。")
-    
     # 映画視聴感想入力フォームを表示（KJ追記★）
     st.session_state.show_review_form = True
     
