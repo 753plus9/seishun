@@ -441,7 +441,8 @@ sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
 
 # 映画視聴感想入力フォームを表示するか判定（KJ追記★）
 if st.session_state.show_review_form:
-    st.title("映画視聴感想入力")
+    #st.title("映画視聴感想入力")
+    st.subheader("観た映画を記録に残そう！")
 
     # データ入力フォーム
     with st.form("entry_form"):
@@ -485,7 +486,7 @@ if st.session_state.show_review_form:
         df = pd.DataFrame(data)
 
         # Streamlitで表示
-        st.subheader("映画記録")
+        st.subheader("観た記録")
         st.dataframe(df)  # Streamlitで表形式で表示
     except Exception as e:
         st.error(f"スプレッドシートの読み取り中にエラーが発生しました: {e}")
