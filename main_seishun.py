@@ -306,7 +306,7 @@ full_image_url = None
 if movie_title:
     title = movie_title
 
-    # APIのURLを生成
+    # TMDB API で映画情報を検索
     search_url = "https://api.themoviedb.org/3/search/movie"
     search_params = {
         "api_key": api_key,
@@ -314,16 +314,19 @@ if movie_title:
         "include_adult": "false",
         "language": "ja",
     }
-
-    # APIを呼び出す(映画ID取得用)
     search_response = requests.get(search_url, params=search_params)
-    if search_response.status_code == 200:
+    if search_response.status_code == 200 and search_response.json().get("results"):
         search_data = search_response.json()
+        # 一番最初の検索結果を取得
+        movie = search_data["results"][0]
+        movie_id = movie["id"]
+        #映画名と公開日を保存(KJ追記★）
+        st.session_state.movie_title = movie["title"]  # 映画名を保存
+        st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
 
-        # タイトルの類似度を評価して最も近い映画を選択
+# タイトルの類似度を評価して最も近い映画を選択
         def get_title_similarity(s1, s2):
             return difflib.SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
-
         most_similar_movie = max(
             search_data["results"],
             key=lambda movie: get_title_similarity(movie["title"], title)
@@ -331,8 +334,8 @@ if movie_title:
         movie_id = most_similar_movie["id"]
 
         #映画名と公開日を保存(KJ追記★）
-        #st.session_state.movie_title = movie["title"]  # 映画名を保存
-        #st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
+        st.session_state.movie_title = movie["title"]  # 映画名を保存
+        st.session_state.release_date = movie.get("release_date", "N/A")  # 公開日を保存
 
         # 映画詳細情報の取得
         detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
